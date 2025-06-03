@@ -1,88 +1,711 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>WebAR Model Viewer (Updated AR.js)</title>
-
-    <!-- A-Frame 1.3.0 -->
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <!-- AR.js v3.3.2 for A-Frame (this version is compatible with A-Frame 1.3.0+) -->
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giffelle | AR Product Experience</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #model-selector {
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 8px;
-        border-radius: 4px;
-        font-family: sans-serif;
-      }
-      a-scene {
-        width: 100vw;
-        height: 100vh;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        
+        .logo::after {
+            content: '24H';
+            position: absolute;
+            top: -10px;
+            right: -30px;
+            font-size: 1rem;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            color: #e0e0ff;
+            line-height: 1.6;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ar-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .instructions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff7e5f, #feb47b);
+        }
+        
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: #ffd166;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .instructions li::marker {
+            color: #ff7e5f;
+            font-weight: bold;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            color: #a0a0ff;
+            font-size: 0.9rem;
+        }
+        
+        .ar-scene {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #ff7e5f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .product-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .product-info {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .product-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #ffd166;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-info p {
+            color: #c2c2ff;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
+        .product-specs {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+        
+        .spec-value {
+            color: #ffd166;
+            font-weight: 600;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-btn.active {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            color: #a0a0ff;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .social-links a {
+            color: #ffd166;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        
+        .social-links a:hover {
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .ar-scene {
+                height: 400px;
+            }
+            
+            .logo {
+                font-size: 2.2rem;
+            }
+            
+            .instructions ol {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ar-scene {
+                height: 300px;
+            }
+            
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .feature {
+                font-size: 0.8rem;
+                padding: 8px 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+        
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
     </style>
-  </head>
-
-  <body>
-    <!-- Dropdown: pick which GLB to load -->
-    <select id="model-selector">
-      <option value="deodorant.glb">Deodorant</option>
-      <option value="hs-bottle.glb">H&amp;S Bottle</option>
-      <option value="razor.glb">Razor</option>
-    </select>
-
-    <!-- 
-      a-scene with AR.js v3.3.2 
-      • sourceType:webcam  → forces your phone’s camera 
-      • debugUIEnabled:true → shows FPS/markers in a small overlay 
-    -->
-    <a-scene
-      embedded
-      vr-mode-ui="enabled: false"
-      renderer="antialias: true; colorManagement: true;"
-      arjs="sourceType: webcam; debugUIEnabled: true;"
-    >
-      <!-- Ambient + Directional light so models aren’t pitch black -->
-      <a-entity light="type: ambient; intensity: 1"></a-entity>
-      <a-entity
-        light="type: directional; intensity: 0.8"
-        position="0 4 0"
-        rotation="-90 0 0"
-      ></a-entity>
-
-      <!-- Hiro marker: model will appear when marker is detected -->
-      <a-marker preset="hiro" id="marker">
-        <a-entity
-          id="model"
-          gltf-model="glb_models/deodorant.glb"
-          scale="1 1 1"
-          position="0 0.5 0"
-          rotation="0 180 0"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Standard camera entity (required) -->
-      <a-entity camera></a-entity>
-    </a-scene>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">CONFIANCE</div>
+                <div class="logo">PRECISION</div>
+                <div class="logo">FRAICHEUR</div>
+            </div>
+            <p class="tagline">Experience our full product line in augmented reality. View all 3D models simultaneously in your environment.</p>
+            <div class="features">
+                <div class="feature"><i class="fas fa-box-open"></i> Multi-Product AR</div>
+                <div class="feature"><i class="fas fa-vr-cardboard"></i> Realistic 3D Models</div>
+                <div class="feature"><i class="fas fa-mobile-alt"></i> Works on PC & Mobile</div>
+                <div class="feature"><i class="fas fa-sync-alt"></i> Interactive Controls</div>
+            </div>
+        </header>
+        
+        <div class="ar-container fade-in">
+            <div class="ar-header">
+                <h2><i class="fas fa-cube"></i> Augmented Reality Experience</h2>
+                <div class="status-bar">
+                    <span><i class="fas fa-satellite"></i> AR.js v3.4.0</span>
+                    <span id="camera-status"><i class="fas fa-camera"></i> Initializing...</span>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> How to use:</h3>
+                <ol>
+                    <li>Allow camera access when prompted by your browser</li>
+                    <li>Point your camera at a well-lit, flat surface</li>
+                    <li>Move your device slowly to detect surfaces</li>
+                    <li>All three products will appear automatically</li>
+                    <li>Use the controls to adjust the display</li>
+                </ol>
+            </div>
+            
+            <div class="ar-scene">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner"></div>
+                    <p>Loading AR experience...</p>
+                    <p class="hint">Make sure your camera is connected and accessible</p>
+                </div>
+                <a-scene 
+                    embedded 
+                    arjs="sourceType: webcam; detectionMode: mono; matrixCodeType: 3x3; debugUIEnabled: false;"
+                    renderer="antialias: true; alpha: true;"
+                    vr-mode-ui="enabled: false">
+                    
+                    <a-marker type="pattern" url="https://raw.githack.com/AR-js-org/AR.js/master/data/patt.hiro" emitevents="true">
+                        <!-- Deodorant -->
+                        <a-entity 
+                            id="deodorant-model"
+                            gltf-model="url(glb_models/deodorant.glb)"
+                            scale="0.15 0.15 0.15"
+                            position="-1 0.5 0"
+                            animation-mixer="loop: repeat">
+                        </a-entity>
+                        
+                        <!-- H&S Bottle -->
+                        <a-entity 
+                            id="bottle-model"
+                            gltf-model="url(glb_models/h&s bottle.glb)"
+                            scale="0.08 0.08 0.08"
+                            position="0 0.5 0"
+                            animation-mixer="loop: repeat">
+                        </a-entity>
+                        
+                        <!-- Razor -->
+                        <a-entity 
+                            id="razor-model"
+                            gltf-model="url(glb_models/razor.glb)"
+                            scale="0.2 0.2 0.2"
+                            position="1 0.5 0"
+                            animation-mixer="loop: repeat">
+                        </a-entity>
+                    </a-marker>
+                    
+                    <a-entity camera></a-entity>
+                </a-scene>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn active" id="rotate-btn">
+                    <i class="fas fa-sync-alt"></i> Auto-Rotate
+                </button>
+                <button class="control-btn" id="scale-btn">
+                    <i class="fas fa-expand-alt"></i> Scale Models
+                </button>
+                <button class="control-btn" id="reset-btn">
+                    <i class="fas fa-undo"></i> Reset View
+                </button>
+            </div>
+        </div>
+        
+        <h2 style="text-align: center; margin: 30px 0; color: #ffd166;">
+            <i class="fas fa-star"></i> Featured Products <i class="fas fa-star"></i>
+        </h2>
+        
+        <div class="product-display">
+            <div class="product-info fade-in">
+                <h3><i class="fas fa-spray-can"></i> Deodorant</h3>
+                <p>24-hour protection with our advanced formula that keeps you fresh all day long. Lightweight and non-sticky, designed for sensitive skin.</p>
+                <div class="product-specs">
+                    <div class="spec-item">
+                        <span>Protection:</span>
+                        <span class="spec-value">24 Hours</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>Fragrance:</span>
+                        <span class="spec-value">Ocean Breeze</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>Size:</span>
+                        <span class="spec-value">150ml</span>
+                    </div>
+                </div>
+                <p>Our dermatologist-tested formula provides all-day freshness without irritation. Aluminum-free and cruelty-free.</p>
+            </div>
+            
+            <div class="product-info fade-in">
+                <h3><i class="fas fa-pump-soap"></i> H&S Bottle</h3>
+                <p>Professional hair care with natural ingredients. Strengthens hair and prevents breakage for healthier, shinier hair.</p>
+                <div class="product-specs">
+                    <div class="spec-item">
+                        <span>Type:</span>
+                        <span class="spec-value">Shampoo & Conditioner</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>Volume:</span>
+                        <span class="spec-value">400ml</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>For:</span>
+                        <span class="spec-value">All Hair Types</span>
+                    </div>
+                </div>
+                <p>Infused with tea tree oil and mint extracts to refresh your scalp and revitalize your hair. Sulfate-free formula.</p>
+            </div>
+            
+            <div class="product-info fade-in">
+                <h3><i class="fas fa-cut"></i> Razor</h3>
+                <p>Precision-engineered razor with 5 ultra-sharp blades for the closest, most comfortable shave.</p>
+                <div class="product-specs">
+                    <div class="spec-item">
+                        <span>Blades:</span>
+                        <span class="spec-value">5 Stainless Steel</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>Lubrication:</span>
+                        <span class="spec-value">Aloe Vera Strip</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>Handle:</span>
+                        <span class="spec-value">Ergonomic Grip</span>
+                    </div>
+                </div>
+                <p>Flexible head contours to your face for maximum contact and minimal irritation. Replaceable blade cartridge system.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 Giffelle | 24H Innovation in Personal Care Products</p>
+            <p>AR Experience Powered by AR.js and A-Frame</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+        </footer>
+    </div>
 
     <script>
-      // Swap the GLB whenever the dropdown is changed
-      const selector = document.getElementById("model-selector");
-      const modelEl = document.getElementById("model");
-
-      selector.addEventListener("change", (e) => {
-        const filename = e.target.value;
-        modelEl.setAttribute("gltf-model", "glb_models/" + filename);
-      });
+        document.addEventListener('DOMContentLoaded', function() {
+            const scene = document.querySelector('a-scene');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const cameraStatus = document.getElementById('camera-status');
+            const rotateBtn = document.getElementById('rotate-btn');
+            const scaleBtn = document.getElementById('scale-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            
+            // Initial model positions
+            const initialPositions = {
+                deodorant: { x: -1, y: 0.5, z: 0 },
+                bottle: { x: 0, y: 0.5, z: 0 },
+                razor: { x: 1, y: 0.5, z: 0 }
+            };
+            
+            // Initial scales
+            const initialScales = {
+                deodorant: '0.15 0.15 0.15',
+                bottle: '0.08 0.08 0.08',
+                razor: '0.2 0.2 0.2'
+            };
+            
+            // Camera status updates
+            scene.addEventListener('arReady', () => {
+                cameraStatus.textContent = 'Camera: Ready';
+                cameraStatus.innerHTML = '<i class="fas fa-check-circle"></i> Camera: Ready';
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            });
+            
+            scene.addEventListener('arError', (err) => {
+                console.error('AR Error:', err);
+                cameraStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Camera Error (check permissions)';
+                cameraStatus.style.color = '#ff6b6b';
+                
+                // Show error message in loading overlay
+                loadingOverlay.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 3rem; color: #ff6b6b; margin-bottom: 20px;">
+                            <i class="fas fa-video-slash"></i>
+                        </div>
+                        <h3 style="margin-bottom: 15px;">Camera Access Required</h3>
+                        <p>Please allow camera access in your browser settings to use AR features.</p>
+                        <p>Refresh the page after granting permissions.</p>
+                        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #ff7e5f; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-sync"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            });
+            
+            // Rotate models
+            rotateBtn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const models = ['deodorant', 'bottle', 'razor'];
+                
+                models.forEach(model => {
+                    const modelEl = document.getElementById(`${model}-model`);
+                    if (modelEl) {
+                        if (this.classList.contains('active')) {
+                            modelEl.setAttribute('animation-mixer', 'loop: repeat');
+                        } else {
+                            modelEl.removeAttribute('animation-mixer');
+                        }
+                    }
+                });
+            });
+            
+            // Scale models
+            scaleBtn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const models = ['deodorant', 'bottle', 'razor'];
+                
+                models.forEach(model => {
+                    const modelEl = document.getElementById(`${model}-model`);
+                    if (modelEl) {
+                        if (this.classList.contains('active')) {
+                            // Scale up
+                            switch(model) {
+                                case 'deodorant':
+                                    modelEl.setAttribute('scale', '0.2 0.2 0.2');
+                                    break;
+                                case 'bottle':
+                                    modelEl.setAttribute('scale', '0.12 0.12 0.12');
+                                    break;
+                                case 'razor':
+                                    modelEl.setAttribute('scale', '0.25 0.25 0.25');
+                                    break;
+                            }
+                        } else {
+                            // Reset to initial scale
+                            modelEl.setAttribute('scale', initialScales[model]);
+                        }
+                    }
+                });
+            });
+            
+            // Reset view
+            resetBtn.addEventListener('click', function() {
+                const models = ['deodorant', 'bottle', 'razor'];
+                
+                models.forEach(model => {
+                    const modelEl = document.getElementById(`${model}-model`);
+                    if (modelEl) {
+                        // Reset position
+                        modelEl.setAttribute('position', 
+                            `${initialPositions[model].x} ${initialPositions[model].y} ${initialPositions[model].z}`);
+                        
+                        // Reset scale
+                        modelEl.setAttribute('scale', initialScales[model]);
+                        
+                        // Reset rotation
+                        modelEl.setAttribute('rotation', '0 0 0');
+                    }
+                });
+                
+                // Ensure rotation is on
+                rotateBtn.classList.add('active');
+                models.forEach(model => {
+                    const modelEl = document.getElementById(`${model}-model`);
+                    modelEl.setAttribute('animation-mixer', 'loop: repeat');
+                });
+                
+                // Ensure scale is normal
+                scaleBtn.classList.remove('active');
+            });
+            
+            // Add floating animation to models after they load
+            scene.addEventListener('model-loaded', function() {
+                const models = ['deodorant', 'bottle', 'razor'];
+                models.forEach(model => {
+                    const modelEl = document.getElementById(`${model}-model`);
+                    modelEl.classList.add('floating');
+                });
+            });
+            
+            // Add fade-in effect to elements
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.2}s`;
+            });
+        });
     </script>
-  </body>
+</body>
 </html>
