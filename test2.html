@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Model Viewer</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333;
+        }
+        model-viewer {
+            width: 90%;
+            max-width: 800px;
+            height: 70vh; /* Adjusted height for better viewing */
+            max-height: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background-color: #ffffff; /* White background for the viewer */
+            margin-bottom: 20px;
+        }
+        .ar-button-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 0;
+        }
+        #ar-button {
+            display: inline-flex; /* Changed from block to inline-flex for centering */
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+            background-color: #007bff; /* Blue button */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #ar-button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        #ar-button svg {
+            margin-right: 8px;
+            width: 20px;
+            height: 20px;
+        }
+        .info-text {
+            text-align: center;
+            margin: 20px;
+            padding: 0 15px;
+            color: #555;
+            font-size: 14px;
+            max-width: 600px;
+        }
+        .header-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Fallback for AR not supported */
+        .ar-not-supported-message {
+            display: none; /* Hidden by default */
+            padding: 10px;
+            background-color: #fff3cd; /* Light yellow */
+            color: #856404; /* Dark yellow text */
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        model-viewer[ar-status="not-available"] ~ .ar-button-container #ar-button {
+            display: none; /* Hide button if AR is not available */
+        }
+        model-viewer[ar-status="not-available"] ~ .ar-not-supported-message {
+            display: block; /* Show message if AR is not available */
+        }
+
+    </style>
+</head>
+<body>
+    <h1 class="header-text">View Model in Your Space</h1>
+
+    <p class="info-text">
+        Interact with the 3D model below. If your device supports AR, click the "View in AR" button to place it in your environment using your camera.
+    </p>
+
+    <!--
+      model-viewer component:
+      - src: URL to your GLB/GLTF model.
+             IMPORTANT: Replace "glb_models/deodorant.glb" 
+             with the actual URL where your deodorant.glb model is hosted.
+      - ios-src: URL to your USDZ model (optional, for iOS Quick Look).
+                 IMPORTANT: Replace "glb_models/deodorant.usdz" 
+                 if you have a USDZ version for iOS.
+      - ar: Enables AR.
+      - ar-modes: Specifies which AR modes to use (webxr, scene-viewer, quick-look).
+      - camera-controls: Allows users to rotate/pan/zoom the model in the 3D view.
+      - auto-rotate: Rotates the model automatically.
+      - shadow-intensity: Controls the intensity of the shadow.
+      - environment-image: Provides an environment map for reflections (optional).
+        Using "neutral" for a simple, clean lighting environment.
+      - poster: Image to show while the model is loading.
+        Example placeholder: https://placehold.co/600x400/eee/ccc?text=Loading+Model...
+        onerror: Fallback for poster image.
+    -->
+    <model-viewer
+        id="ar-viewer"
+        src="glb_models/deodorant.glb"
+        ios-src="glb_models/deodorant.usdz" /* Provide USDZ if available */
+        alt="A 3D model of a deodorant"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        environment-image="neutral"
+        poster="https://placehold.co/800x600/eeeeee/cccccc?text=Loading+3D+Model..."
+        onerror="this.poster='https://placehold.co/800x600/ff0000/ffffff?text=Error+Loading+Model'"
+    >
+        </model-viewer>
+
+    <div class="ar-button-container">
+        <!-- If you want to create your own button to trigger AR, you'd use JavaScript:
+             const modelViewer = document.querySelector('#ar-viewer');
+             document.querySelector('#custom-ar-button').addEventListener('click', () => modelViewer.activateAR());
+        -->
+    </div>
+
+    <div class="ar-not-supported-message" id="ar-message">
+        AR is not supported on this device or browser. You can still view the model in 3D.
+    </div>
+
+    <p class="info-text">
+        <strong>Instructions:</strong>
+        <br>1. Allow camera access if prompted when entering AR mode.
+        <br>2. Scan your environment to detect a surface.
+        <br>3. Tap on the screen to place the model.
+    </p>
+
+    <script>
+        // Optional: You can add JavaScript to interact with the model-viewer component
+        // For example, to check AR availability or handle events.
+        const modelViewerElement = document.getElementById('ar-viewer');
+
+        modelViewerElement.addEventListener('ar-status', (event) => {
+            if (event.detail.status === 'failed') {
+                console.error("AR failed to start:", event.detail);
+                const arMessage = document.getElementById('ar-message');
+                arMessage.textContent = 'Failed to start AR. Please ensure your browser has camera permissions and supports AR.';
+                arMessage.style.display = 'block';
+            } else if (event.detail.status === 'not-available') {
+                 console.log("AR not available on this device/browser.");
+                 // The CSS already handles showing the message for 'not-available'
+            }
+        });
+
+        modelViewerElement.addEventListener('error', (event) => {
+            console.error('Error loading model:', event.detail);
+            // You could display a more user-friendly error message on the page here
+            const arMessage = document.getElementById('ar-message');
+            arMessage.textContent = 'Error loading the 3D model. Please check the model URL and ensure it is accessible.';
+            arMessage.style.display = 'block';
+            arMessage.style.backgroundColor = '#f8d7da'; // Light red for error
+            arMessage.style.color = '#721c24'; // Dark red text
+            arMessage.style.borderColor = '#f5c6cb';
+        });
+    </script>
+</body>
+</html>
